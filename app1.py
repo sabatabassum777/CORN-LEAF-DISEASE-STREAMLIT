@@ -3,12 +3,22 @@ from PIL import Image
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
+import os
 
 st.set_page_config(page_title='Corn Leaf Disease Prediction')
 
 MODEL_PATH = 'model51_vgg19.h5'
-model = load_model(MODEL_PATH)
+MODEL_WITH_OPTIMIZER_PATH = 'model_with_optimizer.h5'
+
+# Check if the model with optimizer state already exists
+if not os.path.exists(MODEL_WITH_OPTIMIZER_PATH):
+    # Load the original model
+    model = load_model(MODEL_PATH)
+    # Save the model with optimizer state included
+    model.save(MODEL_WITH_OPTIMIZER_PATH, include_optimizer=True)
+
+# Load the model with optimizer state
+model = load_model(MODEL_WITH_OPTIMIZER_PATH)
 
 def model_predict(img_path, model):
     img = image.load_img(img_path, target_size=(256, 256))
