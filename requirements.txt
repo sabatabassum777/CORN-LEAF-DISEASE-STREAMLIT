@@ -67,6 +67,7 @@ Werkzeug
 wrapt
 zipp
 streamlit
+streamlit-webrtc
 tensorflow
 numpy
 Pillow
