@@ -37,24 +37,30 @@ if camera_button:
     if webrtc_ctx.video_transformer:
         image_data = webrtc_ctx.video_transformer.image
         if image_data is not None:
-            img = Image.fromarray(image_data)
-            st.image(img, caption='Captured Image.', use_column_width=True)
-            img_path = 'uploads/new.png'
-            img.save(img_path)
-            preds, mes, pest, link = model_predict(img_path, model)
-            st.write(f'Disease: {preds}')
-            st.write(f'Measures: {mes}')
-            st.write(f'Pesticides: {pest}')
-            st.write(f'Link: [{link}]({link})')
+            try:
+                img = Image.fromarray(image_data)
+                st.image(img, caption='Captured Image.', use_column_width=True)
+                img_path = 'uploads/new.png'
+                img.save(img_path)
+                preds, mes, pest, link = model_predict(img_path, model)
+                st.write(f'Disease: {preds}')
+                st.write(f'Measures: {mes}')
+                st.write(f'Pesticides: {pest}')
+                st.write(f'Link: [{link}]({link})')
+            except Exception as e:
+                st.error(f"Error processing image: {e}")
 
 image_file = st.file_uploader('Upload Image', type=['png', 'jpg', 'jpeg'])
 if image_file is not None:
-    img = Image.open(image_file)
-    st.image(img, caption='Uploaded Image.', use_column_width=True)
-    img_path = 'uploads/new.png'
-    img.save(img_path)
-    preds, mes, pest, link = model_predict(img_path, model)
-    st.write(f'Disease: {preds}')
-    st.write(f'Measures: {mes}')
-    st.write(f'Pesticides: {pest}')
-    st.write(f'Link: [{link}]({link})')
+    try:
+        img = Image.open(image_file)
+        st.image(img, caption='Uploaded Image.', use_column_width=True)
+        img_path = 'uploads/new.png'
+        img.save(img_path)
+        preds, mes, pest, link = model_predict(img_path, model)
+        st.write(f'Disease: {preds}')
+        st.write(f'Measures: {mes}')
+        st.write(f'Pesticides: {pest}')
+        st.write(f'Link: [{link}]({link})')
+    except Exception as e:
+        st.error(f"Error processing image: {e}")
