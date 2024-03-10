@@ -1,9 +1,9 @@
 import streamlit as st
 from PIL import Image
-import base64
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
 st.set_page_config(page_title='Corn Leaf Disease Prediction')
 
@@ -30,20 +30,30 @@ def model_predict(img_path, model):
 
 st.title('Corn Leaf Disease Prediction')
 
-camera_button = st.button('Capture Image')
+camera_button = st.button('Capture Image from Camera')
 if camera_button:
-    st.write('TODO: Add code to capture image from camera and process it.')
+    st.write('Please wait while we connect to your camera...')
+    webrtc_ctx = webrtc_streamer(key="example")
+    if webrtc_ctx.video_transformer:
+        image_data = webrtc_ctx.video_transformer.image
+        if image_data is not None:
+            img = Image.fromarray(image_data)
+            st.image(img, caption='Captured Image.', use_column_width=True)
+            img_path = 'uploads/new.png'
+            img.save(img_path)
+            preds, mes, pest, link = model_predict(img_path, model)
+            st.write(f'Disease: {preds}')
+            st.write(f'Measures: {mes}')
+            st.write(f'Pesticides: {pest}')
+            st.write(f'Link: [{link}]({link})')
 
 image_file = st.file_uploader('Upload Image', type=['png', 'jpg', 'jpeg'])
 if image_file is not None:
     img = Image.open(image_file)
     st.image(img, caption='Uploaded Image.', use_column_width=True)
-
     img_path = 'uploads/new.png'
     img.save(img_path)
-
     preds, mes, pest, link = model_predict(img_path, model)
-
     st.write(f'Disease: {preds}')
     st.write(f'Measures: {mes}')
     st.write(f'Pesticides: {pest}')
