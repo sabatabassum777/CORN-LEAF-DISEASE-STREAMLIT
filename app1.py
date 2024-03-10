@@ -38,39 +38,77 @@ def model_predict(img_path, model):
     else:
         return 'Unknown', 'Unknown', 'Unknown', 'Unknown'
 
-st.title('Corn Leaf Disease Prediction')
+# HTML code for the camera capture
+html_code = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Corn Leaf Disease Prediction</title>
+    <!-- CSS only -->
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <div class="card">
+        <div class="logo-container">
+        </div>
+        <div class="line"></div>
+        <div class="text">Examine your crop here</div>
+        <button id="start-camera" class="btn"><i class="animation"></i>Capture<i class="animation"></i></button>
+        <video id="video" width="320" height="240" autoplay></video>
+        <button id="click-photo">Click Photo</button>
+        <form action="/predict" method="post" >
+        <div id="dataurl-container">
+            <canvas id="canvas" width="320" height="240"></canvas>
+            <div id="dataurl-header">Image Data URL</div>
+            <input style="display:none" type="text" id="dataurl" name="sec" readonly>
+            <button type="submit">Submit</button>
+        </div>
+        </form>
+        <button>Disease {{ preds }}</button>
+        <button>Measures {{ mes }}</button>
+        <button>Pesticides {{ pest }}</button>
+        <a href="{{ link }}"><button class="btn1">Link {{ link }}</button></a>
+        </div>
+    <script>
 
-camera_button = st.button('Capture Image from Camera')
-if camera_button:
-    st.write('Please wait while we connect to your camera...')
-    webrtc_ctx = webrtc_streamer(key="example")
-    if webrtc_ctx.video_transformer:
-        image_data = webrtc_ctx.video_transformer.image
-        if image_data is not None:
-            try:
-                img = Image.fromarray(image_data)
-                st.image(img, caption='Captured Image.', use_column_width=True)
-                img_path = 'uploads/new.png'
-                img.save(img_path)
-                preds, mes, pest, link = model_predict(img_path, model)
-                st.write(f'Disease: {preds}')
-                st.write(f'Measures: {mes}')
-                st.write(f'Pesticides: {pest}')
-                st.write(f'Link: [{link}]({link})')
-            except Exception as e:
-                st.error(f"Error processing image: {e}")
+        let camera_button = document.querySelector("#start-camera");
+        let video = document.querySelector("#video");
+        let click_button = document.querySelector("#click-photo");
+        let canvas = document.querySelector("#canvas");
+        let dataurl = document.querySelector("#dataurl");
+        let dataurl_container = document.querySelector("#dataurl-container");
 
-image_file = st.file_uploader('Upload Image', type=['png', 'jpg', 'jpeg'])
-if image_file is not None:
-    try:
-        img = Image.open(image_file)
-        st.image(img, caption='Uploaded Image.', use_column_width=True)
-        img_path = 'uploads/new.png'
-        img.save(img_path)
-        preds, mes, pest, link = model_predict(img_path, model)
-        st.write(f'Disease: {preds}')
-        st.write(f'Measures: {mes}')
-        st.write(f'Pesticides: {pest}')
-        st.write(f'Link: [{link}]({link})')
-    except Exception as e:
-        st.error(f"Error processing image: {e}")
+        camera_button.addEventListener('click', async function() {
+            let stream = null;
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            }
+            catch(error) {
+                alert(error.message);
+                return;
+            }
+
+            video.srcObject = stream;
+
+            video.style.display = 'block';
+            camera_button.style.display = 'none';
+            click_button.style.display = 'block';
+        });
+
+        click_button.addEventListener('click', function() {
+            canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+            let image_data_url = canvas.toDataURL('image/jpeg');
+
+            dataurl.value = image_data_url;
+            dataurl_container.style.display = 'block';
+        });
+
+    </script>
+</body>
+</html>
+"""
+
+# Streamlit app code
+st.write(html_code, unsafe_allow_html=True)
